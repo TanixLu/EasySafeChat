@@ -65,7 +65,6 @@
             this.OthersRichTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.OthersRichTextBox.Location = new System.Drawing.Point(494, 58);
             this.OthersRichTextBox.Name = "OthersRichTextBox";
-            this.OthersRichTextBox.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
             this.OthersRichTextBox.Size = new System.Drawing.Size(485, 436);
             this.OthersRichTextBox.TabIndex = 1;
             this.OthersRichTextBox.Text = "";
@@ -87,7 +86,6 @@
             this.MyRichTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.MyRichTextBox.Location = new System.Drawing.Point(3, 58);
             this.MyRichTextBox.Name = "MyRichTextBox";
-            this.MyRichTextBox.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
             this.MyRichTextBox.Size = new System.Drawing.Size(485, 436);
             this.MyRichTextBox.TabIndex = 0;
             this.MyRichTextBox.Text = "";

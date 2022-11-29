@@ -232,8 +232,11 @@ namespace EasySafeChat
         {
             var start = textBox.GetFirstCharIndexOfCurrentLine();
             var lineIndex = textBox.GetLineFromCharIndex(start);
-            var end = textBox.Lines[lineIndex].Length;
-            textBox.Select(start, end);
+            if (lineIndex < textBox.Lines.Length)
+            {
+                var end = textBox.Lines[lineIndex].Length;
+                textBox.Select(start, end);
+            }
         }
 
         private void MyKeysTextBox_DoubleClick(object sender, EventArgs e)
