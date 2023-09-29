@@ -366,3 +366,6 @@ FodyWeavers.xsd
 *.zip
 *.cmd
 *.exe
+MyPrivateKey.txt
+MyPublicKey.txt
+OthersPublicKey.txt

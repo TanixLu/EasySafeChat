@@ -8,7 +8,7 @@ exe_path = 'bin/release/' + exe_name
 zip_path = project_name + '.zip'
 cmd_path = 't.cmd'
 
-MAX_CHAR_NUM = 2231
+MAX_CHAR_NUM = 2048
 
 with ZipFile(zip_path, 'w', compression=ZIP_LZMA, compresslevel=9) as zip_obj:
     zip_obj.write(exe_path, exe_name)
@@ -20,6 +20,7 @@ with open(zip_path, 'rb') as f:
     while len(base64_text) > MAX_CHAR_NUM:
         lines.append(base64_text[:MAX_CHAR_NUM])
         base64_text = base64_text[MAX_CHAR_NUM:]
+    lines.append(base64_text)
 
 os.remove(zip_path)
 
