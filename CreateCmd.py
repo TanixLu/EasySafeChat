@@ -1,9 +1,16 @@
 import base64
+from zipfile import ZipFile, ZIP_LZMA
 
-zip_path = 'EasySafeChat.zip'
+project_name = 'EasySafeChat'
+exe_name = project_name + '.exe'
+exe_path = 'bin/release/' + exe_name
+zip_path = project_name + '.zip'
 cmd_path = 't.cmd'
 
 MAX_CHAR_NUM = 2231
+
+with ZipFile(zip_path, 'w', compression=ZIP_LZMA, compresslevel=9) as zip_obj:
+    zip_obj.write(exe_path, exe_name)
 
 lines = []
 with open(zip_path, 'rb') as f:
