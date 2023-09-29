@@ -1,5 +1,6 @@
 import base64
 from zipfile import ZipFile, ZIP_LZMA
+import os
 
 project_name = 'EasySafeChat'
 exe_name = project_name + '.exe'
@@ -20,11 +21,13 @@ with open(zip_path, 'rb') as f:
         lines.append(base64_text[:MAX_CHAR_NUM])
         base64_text = base64_text[MAX_CHAR_NUM:]
 
+os.remove(zip_path)
+
 with open(cmd_path, 'w') as f:
     f.write('@echo off\nset f=EasySafeChat\n')
     f.write(f'echo {lines[0]}> "%f%.txt"\n')
     for i in range(1, len(lines)):
-        f.write(f'echo {lines[0]}>> "%f%.txt"\n')
+        f.write(f'echo {lines[i]}>> "%f%.txt"\n')
     f.write(r'''certutil -decode "%f%.txt" "%f%.zip"
 del "%f%.txt"
 tar -xf "%f%.zip"
