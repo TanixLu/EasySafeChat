@@ -27,9 +27,10 @@ namespace EasySafeChat
         private const int HASH_BYTES = 20;
         private const int BLOCK_BYTES = ENC_BLOCK_BYTES - 2 * HASH_BYTES - 2;
 
-        // 密钥文件格式：第一行是n，第二行是p（可选）
-        private const string MY_KEYS_PATH = "MyKeys.txt";
-        private const string OTHERS_KEY_PATH = "OthersPublicKey.txt";
+        // 密钥文件格式：base64编码的n或者p
+        private const string MY_PUBLIC_KEY_PATH = "MyPublicKey.txt";
+        private const string MY_PRIVATE_KEY_PATH = "MyPrivateKey.txt";
+        private const string OTHERS_PUBLIC_KEY_PATH = "OthersPublicKey.txt";
 
         public Form1()
         {
@@ -129,13 +130,13 @@ namespace EasySafeChat
 
         private RSACryptoServiceProvider GetMyRsa()
         {
-            if (MyKeysRichTextBox.Text.Length > 0)
+            if (MyPublicKeyRichTextBox.Text.Length > 0)
             {
                 try
                 {
                     var rsaParams = GetFullParams(
-                        Convert.FromBase64String(MyKeysRichTextBox.Lines[0].Trim()),
-                        Convert.FromBase64String(MyKeysRichTextBox.Lines[1].Trim())
+                        Convert.FromBase64String(MyPublicKeyRichTextBox.Lines[0].Trim()),
+                        Convert.FromBase64String(File.ReadAllText(MY_PRIVATE_KEY_PATH).Trim())
                     );
                     var myRsa = new RSACryptoServiceProvider();
                     myRsa.ImportParameters(rsaParams);
@@ -156,13 +157,13 @@ namespace EasySafeChat
                 // 如果为空，则生成新密钥
                 var myRsa = new RSACryptoServiceProvider(N_BITS);
                 var rsaParams = myRsa.ExportParameters(true);
-                MyKeysRichTextBox.Lines = new string[] {
+                MyPublicKeyRichTextBox.Lines = new string[] {
                     Convert.ToBase64String(rsaParams.Modulus),
-                    Convert.ToBase64String(rsaParams.P),
                 };
 
                 // 立即存入文件
-                MyKeysTimer_Tick(null, null);
+                MyPublicKeyTimer_Tick(null, null);
+                File.WriteAllText(MY_PRIVATE_KEY_PATH, Convert.ToBase64String(rsaParams.P));
 
                 return myRsa;
             }
@@ -170,14 +171,14 @@ namespace EasySafeChat
 
         private RSACryptoServiceProvider GetOthersRsa()
         {
-            if (OthersKeyRichTextBox.Text.Length > 0)
+            if (OthersPublicKeyRichTextBox.Text.Length > 0)
             {
                 try
                 {
                     var rsaParams = new RSAParameters
                     {
                         Exponent = EXPONENT,
-                        Modulus = Convert.FromBase64String(OthersKeyRichTextBox.Lines[0].Trim())
+                        Modulus = Convert.FromBase64String(OthersPublicKeyRichTextBox.Lines[0].Trim())
                     };
                     var othersRsa = new RSACryptoServiceProvider();
                     othersRsa.ImportParameters(rsaParams);
@@ -197,35 +198,35 @@ namespace EasySafeChat
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            if (File.Exists(MY_KEYS_PATH))
-                MyKeysRichTextBox.Text = File.ReadAllText(MY_KEYS_PATH);
-            if (MyKeysRichTextBox.Text.Length == 0) GetMyRsa();
-            if (File.Exists(OTHERS_KEY_PATH))
-                OthersKeyRichTextBox.Text = File.ReadAllText(OTHERS_KEY_PATH);
-            if (OthersKeyRichTextBox.Text.Length == 0)
-                OthersKeyRichTextBox.Text = "请填入对方公钥";
+            if (File.Exists(MY_PUBLIC_KEY_PATH))
+                MyPublicKeyRichTextBox.Text = File.ReadAllText(MY_PUBLIC_KEY_PATH);
+            if (MyPublicKeyRichTextBox.Text.Length == 0) GetMyRsa();
+            if (File.Exists(OTHERS_PUBLIC_KEY_PATH))
+                OthersPublicKeyRichTextBox.Text = File.ReadAllText(OTHERS_PUBLIC_KEY_PATH);
+            if (OthersPublicKeyRichTextBox.Text.Length == 0)
+                OthersPublicKeyRichTextBox.Text = "请填入对方公钥";
         }
 
-        private void MyKeys_TextChanged(object sender, EventArgs e)
+        private void MyPublicKey_TextChanged(object sender, EventArgs e)
         {
-            MyKeysTimer.Stop();
-            MyKeysTimer.Start();
+            MyPublicKeyTimer.Stop();
+            MyPublicKeyTimer.Start();
         }
 
-        private void OthersKey_TextChanged(object sender, EventArgs e)
+        private void OthersPublicKey_TextChanged(object sender, EventArgs e)
         {
-            OthersKeyTimer.Stop();
-            OthersKeyTimer.Start();
+            OthersPublicKeyTimer.Stop();
+            OthersPublicKeyTimer.Start();
         }
 
-        private void MyKeysTimer_Tick(object sender, EventArgs e)
+        private void MyPublicKeyTimer_Tick(object sender, EventArgs e)
         {
-            File.WriteAllText(MY_KEYS_PATH, MyKeysRichTextBox.Text);
+            File.WriteAllText(MY_PUBLIC_KEY_PATH, MyPublicKeyRichTextBox.Text);
         }
 
-        private void OthersKeyTimer_Tick(object sender, EventArgs e)
+        private void OthersPublicKeyTimer_Tick(object sender, EventArgs e)
         {
-            File.WriteAllText(OTHERS_KEY_PATH, OthersKeyRichTextBox.Text);
+            File.WriteAllText(OTHERS_PUBLIC_KEY_PATH, OthersPublicKeyRichTextBox.Text);
         }
 
         private void SelectCurrentLine(RichTextBox textBox)
@@ -239,14 +240,14 @@ namespace EasySafeChat
             }
         }
 
-        private void MyKeysTextBox_DoubleClick(object sender, EventArgs e)
+        private void MyPublicKeyTextBox_DoubleClick(object sender, EventArgs e)
         {
-            SelectCurrentLine(MyKeysRichTextBox);
+            SelectCurrentLine(MyPublicKeyRichTextBox);
         }
 
-        private void OthersKeyTextBox_DoubleClick(object sender, EventArgs e)
+        private void OthersPublicKeyTextBox_DoubleClick(object sender, EventArgs e)
         {
-            SelectCurrentLine(OthersKeyRichTextBox);
+            SelectCurrentLine(OthersPublicKeyRichTextBox);
         }
 
         private void MyTextBox_DoubleClick(object sender, EventArgs e)
@@ -316,24 +317,19 @@ namespace EasySafeChat
             }
         }
 
-        private void MyTextEncryptBtn_Click(object sender, EventArgs e)
-        {
-            RsaEncrypt(MyRichTextBox, GetMyRsa());
-        }
-
         private void MyTextDecryptBtn_Click(object sender, EventArgs e)
         {
             RsaDecrypt(MyRichTextBox, GetMyRsa());
         }
 
+        private void MyTextEncryptBtn_Click(object sender, EventArgs e)
+        {
+            RsaEncrypt(MyRichTextBox, GetMyRsa());
+        }
+
         private void OthersTextEncryptBtn_Click(object sender, EventArgs e)
         {
             RsaEncrypt(OthersRichTextBox, GetOthersRsa());
-        }
-
-        private void OthersTextDecryptBtn_Click(object sender, EventArgs e)
-        {
-            RsaDecrypt(OthersRichTextBox, GetOthersRsa());
         }
     }
 }
